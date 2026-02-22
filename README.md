@@ -11,6 +11,7 @@
 ### Требования
 - **Node.js** версии 18 или выше ([скачать](https://nodejs.org/))
 - Активный **API-ключ** OpenAI (или совместимый хост, см. ниже)
+- Датасет ([corpus.zip](https://github.com/user-attachments/files/25365231/corpus.zip))
 
 ### Шаги
 
