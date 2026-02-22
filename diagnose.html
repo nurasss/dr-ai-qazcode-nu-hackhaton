@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr.AI — Диагностика по протоколам МЗ РК</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Inter, Arial, sans-serif;
+}
+
+body {
+  background: #f6f4fb;
+}
+
+.drai-trigger {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, #8e5cf6, #6c3bd1);
+  color: white;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.dr-ai-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.dr-ai-window {
+  width: 100%;
+  max-width: 960px;
+  height: 85vh;
+  background: #ffffff;
+  border-radius: 20px;
+  display: flex;
+  overflow: hidden;
+}
+
+.dr-ai-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #F9F9FB;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dr-ai-sidebar-title {
+  padding: 12px 20px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.dr-ai-new-chat-btn {
+  margin: 0 12px 12px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid #c4b5e0;
+  border-radius: 10px;
+  color: #6c3bd1;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dr-ai-new-chat-btn:hover {
+  background: rgba(182, 141, 255, 0.08);
+  border-color: #8e5cf6;
+}
+
+.dr-ai-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dr-ai-header {
+  padding: 20px;
+  background: #f3edff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.dr-ai-header-burger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.dr-ai-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.dr-ai-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 30px;
+}
+
+.dr-ai-form-block {
+  margin-bottom: 24px;
+}
+
+.dr-ai-form-block label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a3f6b;
+  margin-bottom: 8px;
+}
+
+#symptomsInput {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  min-height: 120px;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+#symptomsInput:focus {
+  outline: none;
+  border-color: #8e5cf6;
+}
+
+.dr-ai-info {
+  font-size: 13px;
+  color: #5a5568;
+  margin-top: 8px;
+}
+
+.dr-ai-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.dr-ai-btn-primary {
+  background: linear-gradient(135deg, #8e5cf6, #6c3bd1);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.dr-ai-btn-primary:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.dr-ai-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dr-ai-btn-secondary {
+  background: transparent;
+  border: 1px solid #c4b5e0;
+  color: #6c3bd1;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dr-ai-btn-secondary:hover {
+  background: rgba(182, 141, 255, 0.08);
+  border-color: #8e5cf6;
+}
+
+.dr-ai-results-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #5a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+  padding-top: 8px;
+}
+
+.dr-ai-spinner {
+  text-align: center;
+  padding: 32px;
+}
+
+.dr-ai-spin {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #8e5cf6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: dr-ai-spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes dr-ai-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dr-ai-empty {
+  text-align: center;
+  color: #5a5568;
+  padding: 32px 20px;
+  font-size: 14px;
+}
+
+.dr-ai-success-msg {
+  background: #f0fdf4;
+  color: #166534;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.dr-ai-error-msg {
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.diagnosis-card {
+  background: #f9f9fb;
+  border-left: 4px solid #7B50C1;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.diagnosis-card:hover {
+  background: #f3edff;
+}
+
+.diagnosis-rank {
+  display: inline-block;
+  background: #8e5cf6;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.diagnosis-likelihood {
+  display: inline-block;
+  background: rgba(142, 92, 246, 0.12);
+  color: #6c3bd1;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  margin-left: 8px;
+}
+
+.diagnosis-name {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: #4a3f6b;
+  margin-bottom: 10px;
+}
+
+.icd-codes {
+  margin: 10px 0;
+}
+
+.icd-code {
+  display: inline-block;
+  background: #e8e0f7;
+  color: #5a3d99;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  font-family: ui-monospace, monospace;
+}
+
+.explanation {
+  padding: 12px;
+  background: #fff;
+  border-radius: 10px;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #5a5568;
+  line-height: 1.5;
+  max-height: 280px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.source {
+  font-size: 13px;
+  color: #8b7aa3;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .dr-ai-window {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .dr-ai-sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+  }
+
+  .dr-ai-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .dr-ai-header-burger {
+    display: block;
+  }
+}
+</style>
+</head>
+<body>
+
+<button type="button" id="openDrAi" class="drai-trigger">Dr.AI</button>
+
+<div id="drAiModal" class="dr-ai-modal">
+  <div class="dr-ai-window">
+    <aside class="dr-ai-sidebar" id="drAiSidebar">
+      <div class="dr-ai-sidebar-title">Диагностика</div>
+      <button type="button" class="dr-ai-new-chat-btn" id="drAiNewChatBtn">+ Новый запрос</button>
+    </aside>
+
+    <div class="dr-ai-main">
+      <div class="dr-ai-header">
+        <button type="button" class="dr-ai-header-burger" id="drAiBurger" aria-label="Меню">☰</button>
+        <div>Dr.AI — по протоколам МЗ РК</div>
+        <button type="button" id="closeDrAi" class="dr-ai-close">✕</button>
+      </div>
+
+      <div class="dr-ai-content">
+        <div class="dr-ai-form-block">
+          <label for="symptomsInput">Опишите жалобы и симптомы</label>
+          <textarea id="symptomsInput" placeholder="Например: головная боль, температура, слабость, боль в груди..."></textarea>
+          <div class="dr-ai-info">Чем подробнее описание, тем точнее подбор диагнозов по протоколам.</div>
+          <div class="dr-ai-buttons">
+            <button type="button" class="dr-ai-btn-primary" id="diagnoseBtn">Анализ симптомов</button>
+            <button type="button" class="dr-ai-btn-secondary" id="clearBtn">Очистить</button>
+          </div>
+        </div>
+
+        <div class="dr-ai-results-title">Вероятные диагнозы</div>
+        <div id="resultsContainer">
+          <div class="dr-ai-empty">Введите жалобы и нажмите «Анализ симптомов» для получения рекомендаций.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const modal = document.getElementById('drAiModal');
+const openBtn = document.getElementById('openDrAi');
+const closeBtn = document.getElementById('closeDrAi');
+const sidebarEl = document.getElementById('drAiSidebar');
+const burgerBtn = document.getElementById('drAiBurger');
+const newChatBtn = document.getElementById('drAiNewChatBtn');
+const symptomsInput = document.getElementById('symptomsInput');
+const diagnoseBtn = document.getElementById('diagnoseBtn');
+const clearBtn = document.getElementById('clearBtn');
+const resultsContainer = document.getElementById('resultsContainer');
+
+openBtn.onclick = function() {
+  modal.style.display = 'flex';
+};
+
+closeBtn.onclick = function() {
+  modal.style.display = 'none';
+};
+
+burgerBtn.onclick = function() {
+  sidebarEl.classList.toggle('open');
+};
+
+newChatBtn.onclick = function() {
+  symptomsInput.value = '';
+  resultsContainer.innerHTML = '<div class="dr-ai-empty">Введите жалобы и нажмите «Анализ симптомов» для получения рекомендаций.</div>';
+  symptomsInput.focus();
+  if (window.innerWidth <= 768) sidebarEl.classList.remove('open');
+};
+
+diagnoseBtn.addEventListener('click', analyzeSymptoms);
+clearBtn.addEventListener('click', function() {
+  symptomsInput.value = '';
+  resultsContainer.innerHTML = '<div class="dr-ai-empty">Введите жалобы и нажмите «Анализ симптомов» для получения рекомендаций.</div>';
+  symptomsInput.focus();
+});
+symptomsInput.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.key === 'Enter') analyzeSymptoms();
+});
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+async function analyzeSymptoms() {
+  const symptoms = symptomsInput.value.trim();
+  if (!symptoms) {
+    resultsContainer.innerHTML = '<div class="dr-ai-error-msg">Введите жалобы или симптомы для анализа.</div>';
+    return;
+  }
+
+  diagnoseBtn.disabled = true;
+  resultsContainer.innerHTML = '<div class="dr-ai-spinner"><div class="dr-ai-spin"></div></div>';
+
+  try {
+    const response = await fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symptoms: symptoms })
+    });
+    const data = await response.json();
+
+    if (data.error) {
+      resultsContainer.innerHTML = '<div class="dr-ai-error-msg">Ошибка: ' + escapeHtml(data.error) + '</div>';
+      return;
+    }
+    if (!data.diagnoses || data.diagnoses.length === 0) {
+      const msg = data.message || 'По описанным симптомам в базе протоколов совпадений не найдено. Измените формулировку или добавьте детали.';
+      resultsContainer.innerHTML = '<div class="dr-ai-empty">' + escapeHtml(msg) + '</div>';
+      return;
+    }
+    displayDiagnoses(data.diagnoses);
+  } catch (err) {
+    console.error(err);
+    resultsContainer.innerHTML = '<div class="dr-ai-error-msg">Ошибка сети или сервера. Проверьте, что сервер запущен (localhost:3000), и попробуйте снова.</div>';
+  } finally {
+    diagnoseBtn.disabled = false;
+  }
+}
+
+function displayDiagnoses(diagnoses) {
+  let html = '<div class="dr-ai-success-msg">Найдено возможных диагнозов: ' + diagnoses.length + '</div>';
+  diagnoses.forEach(function(d) {
+    const explanation = escapeHtml(d.clinical_explanation || '').replace(/\n/g, '<br>');
+    const codes = (d.icd_codes || []).map(function(code) {
+      return '<span class="icd-code">' + escapeHtml(code) + '</span>';
+    }).join('');
+    html += '<div class="diagnosis-card">' +
+      '<div class="diagnosis-rank">№ ' + d.rank + '</div>' +
+      '<div class="diagnosis-likelihood">Вероятность: ' + d.likelihood_percent + '%</div>' +
+      '<div class="diagnosis-name">' + escapeHtml(d.diagnosis) + '</div>' +
+      '<div class="icd-codes">' + codes + '</div>' +
+      '<div class="explanation"><strong>Клиническое описание (из протокола):</strong><br>' + explanation + '</div>' +
+      '<div class="source">Источник: ' + escapeHtml(d.source_protocol || '') + '</div>' +
+      '</div>';
+  });
+  resultsContainer.innerHTML = html;
+}
+</script>
+
+</body>
+</html>

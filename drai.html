@@ -1,0 +1,469 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr.AI Chat</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Inter, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #f6f4fb;
+  min-height: 100vh;
+}
+
+.dr-ai-wrap {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.dr-ai-window {
+  width: 100%;
+  max-width: 960px;
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0,0,0,0.08);
+}
+
+/* Sidebar */
+.dr-ai-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #F9F9FB;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dr-ai-sidebar-title {
+  padding: 12px 20px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.dr-ai-new-chat-btn {
+  margin: 0 12px 12px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 1px solid #c4b5e0;
+  border-radius: 10px;
+  color: #6c3bd1;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dr-ai-new-chat-btn:hover {
+  background: rgba(182, 141, 255, 0.08);
+  border-color: #8e5cf6;
+}
+
+.dr-ai-chat-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0 12px;
+}
+
+.dr-ai-chat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 20px 10px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-left: 4px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4a3f6b;
+  transition: background 0.2s, border-color 0.2s;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.dr-ai-chat-item .dr-ai-chat-item-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dr-ai-chat-item:hover {
+  background: rgba(182, 141, 255, 0.12);
+}
+
+.dr-ai-chat-item.active {
+  background: #F3E8FF;
+  border-left-color: #7B50C1;
+  font-weight: 500;
+}
+
+.dr-ai-chat-item-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+}
+
+/* Main area */
+.dr-ai-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dr-ai-header {
+  padding: 20px;
+  background: #f3edff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.dr-ai-header-burger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.dr-ai-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.dr-ai-messages-wrap {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dr-ai-messages {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.user-message {
+  align-self: flex-end;
+  background: #8e5cf6;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 14px;
+  max-width: 70%;
+}
+
+.ai-message {
+  align-self: flex-start;
+  background: #f0ebff;
+  padding: 12px 16px;
+  border-radius: 14px;
+  max-width: 70%;
+}
+
+/* Кнопка «Онлайн консультация» в потоке сообщений */
+.dr-ai-consult-wrap {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.dr-ai-consult-btn {
+  display: inline-block;
+  padding: 8px 20px;
+  background: #7B50C1;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.dr-ai-consult-btn:hover {
+  opacity: 0.92;
+}
+
+/* Input bar: только поле + Отправить */
+.dr-ai-input {
+  padding: 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.dr-ai-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
+.dr-ai-input button {
+  background: linear-gradient(135deg, #8e5cf6, #6c3bd1);
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .dr-ai-window {
+    max-width: 100%;
+    min-height: 100vh;
+  }
+
+  .dr-ai-sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+  }
+
+  .dr-ai-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .dr-ai-header-burger {
+    display: block;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="dr-ai-wrap">
+  <div class="dr-ai-window">
+    <aside class="dr-ai-sidebar" id="drAiSidebar">
+      <div class="dr-ai-sidebar-title">История чатов</div>
+      <button type="button" class="dr-ai-new-chat-btn" id="drAiNewChatBtn">+ Новый чат</button>
+      <div class="dr-ai-chat-list" id="drAiChatList"></div>
+    </aside>
+
+    <div class="dr-ai-main">
+      <div class="dr-ai-header">
+        <button type="button" class="dr-ai-header-burger" id="drAiBurger" aria-label="Меню">☰</button>
+        <div>Dr.AI</div>
+        <a href="index.html" id="closeDrAi" class="dr-ai-close" aria-label="Назад">✕</a>
+      </div>
+
+      <div class="dr-ai-messages-wrap">
+        <div class="dr-ai-messages" id="drAiMessages"></div>
+      </div>
+
+      <div class="dr-ai-input">
+        <input type="text" id="drAiInput" placeholder="Например: температура 38 и болит горло">
+        <button type="button" id="sendDrAi">Отправить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var sendBtn = document.getElementById("sendDrAi");
+  var input = document.getElementById("drAiInput");
+  var messagesEl = document.getElementById("drAiMessages");
+  var chatListEl = document.getElementById("drAiChatList");
+  var sidebarEl = document.getElementById("drAiSidebar");
+  var burgerBtn = document.getElementById("drAiBurger");
+  var newChatBtn = document.getElementById("drAiNewChatBtn");
+
+  if (!sendBtn || !input || !messagesEl || !chatListEl) return;
+
+  var state = {
+    chats: [],
+    activeChatId: null,
+    sending: false
+  };
+
+  function generateId() {
+    return "chat_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
+  }
+
+  function getOrCreateActiveChat() {
+    if (state.activeChatId) {
+      var chat = state.chats.find(function(c) { return c.id === state.activeChatId; });
+      if (chat) return chat;
+    }
+    var newChat = {
+      id: generateId(),
+      title: "Новый чат",
+      messages: [
+        { role: "ai", text: "Опиши симптомы и я подскажу что делать." }
+      ]
+    };
+    state.chats.unshift(newChat);
+    state.activeChatId = newChat.id;
+    return newChat;
+  }
+
+  function setActiveChat(id) {
+    state.activeChatId = id;
+    renderChatList();
+    renderMessages();
+    if (window.innerWidth <= 768 && sidebarEl) {
+      sidebarEl.classList.remove("open");
+    }
+  }
+
+  function escapeHtml(s) {
+    if (s == null || s === undefined) return "";
+    var div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  var chatBubbleIcon = '<svg class="dr-ai-chat-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
+
+  function renderChatList() {
+    chatListEl.innerHTML = "";
+    state.chats.forEach(function(chat) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "dr-ai-chat-item" + (chat.id === state.activeChatId ? " active" : "");
+      btn.setAttribute("data-chat-id", chat.id);
+      btn.innerHTML = chatBubbleIcon + '<span class="dr-ai-chat-item-text">' + escapeHtml(chat.title) + "</span>";
+      btn.onclick = function() { setActiveChat(chat.id); };
+      chatListEl.appendChild(btn);
+    });
+  }
+
+  function renderMessages() {
+    messagesEl.innerHTML = "";
+    var chat = state.chats.find(function(c) { return c.id === state.activeChatId; });
+    if (!chat) {
+      getOrCreateActiveChat();
+      renderChatList();
+      renderMessages();
+      return;
+    }
+    chat.messages.forEach(function(msg) {
+      var div = document.createElement("div");
+      div.className = msg.role === "user" ? "user-message" : "ai-message";
+      div.textContent = msg.text || "";
+      if (msg.loading) div.classList.add("ai-message-loading");
+      messagesEl.appendChild(div);
+    });
+    var consultWrap = document.createElement("div");
+    consultWrap.className = "dr-ai-consult-wrap";
+    var consultBtn = document.createElement("button");
+    consultBtn.type = "button";
+    consultBtn.className = "dr-ai-consult-btn";
+    consultBtn.textContent = "Онлайн консультация";
+    consultWrap.appendChild(consultBtn);
+    messagesEl.appendChild(consultWrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  if (burgerBtn && sidebarEl) burgerBtn.onclick = function() { sidebarEl.classList.toggle("open"); };
+
+  newChatBtn.onclick = function() {
+    state.activeChatId = null;
+    getOrCreateActiveChat();
+    renderChatList();
+    renderMessages();
+    if (window.innerWidth <= 768 && sidebarEl) sidebarEl.classList.remove("open");
+  };
+
+  sendBtn.onclick = function(e) {
+    e.preventDefault();
+    sendMessage();
+  };
+  input.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  async function sendMessage() {
+    var text = input.value.trim();
+    if (!text || state.sending) return;
+
+    var chat = getOrCreateActiveChat();
+    if (chat.messages.length === 1 && chat.messages[0].role === "ai") {
+      chat.title = text.length > 35 ? text.slice(0, 35) + "…" : text;
+    }
+    chat.messages.push({ role: "user", text: text });
+    input.value = "";
+    state.sending = true;
+    sendBtn.disabled = true;
+    chat.messages.push({ role: "ai", text: "…", loading: true });
+    renderChatList();
+    renderMessages();
+
+    try {
+      var response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text })
+      });
+      var data = await response.json();
+      chat.messages.pop();
+      if (data.error) {
+        chat.messages.push({ role: "ai", text: "Ошибка: " + (data.error.message || data.error) });
+      } else if (data.reply != null) {
+        chat.messages.push({ role: "ai", text: data.reply });
+      } else {
+        chat.messages.push({ role: "ai", text: "Нет ответа от сервера." });
+      }
+    } catch (err) {
+      chat.messages.pop();
+      chat.messages.push({ role: "ai", text: "Ошибка при связи с сервером. Попробуй позже." });
+      console.error(err);
+    }
+    state.sending = false;
+    sendBtn.disabled = false;
+    renderMessages();
+  }
+
+  getOrCreateActiveChat();
+  renderChatList();
+  renderMessages();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+HTTrack3.49-2+htsswf+htsjava launched on Sat, 21 Feb 2026 14:14:58 at https://metaclinic.kz/ +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar
+(winhttrack -qwC2%Ps2u1%s%uN0%I0p3DaK0H0%kf2A25000%f#f -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" https://metaclinic.kz/ -O1 "C:\My Web Sites\metaclinic" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar )
+
+Information, Warnings and Errors reported for this mirror:
+note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
+	such as username/password authentication for websites mirrored in this project
+	do not share these files/folders if you want these information to remain private
+
+14:15:15	Error: 	"Not Found" (404) at link https://metaclinic.kz/OPR/ (from https://metaclinic.kz/)
+14:15:15	Error: 	"Bad Request" (400) at link https://www.googletagmanager.com/gtm.js?id= (from https://metaclinic.kz/)
+14:15:24	Error: 	"Not Found" (404) at link https://metaclinic.kz/home (from https://metaclinic.kz/)
+14:15:34	Error: 	"Not Found" (404) at link https://metaclinic.kz/; (from https://metaclinic.kz/termsofuse)
+14:15:34	Error: 	"Not Found" (404) at link https://metaclinic.kz/null (from https://metaclinic.kz/oferta)
+
+HTTrack Website Copier/3.49-2 mirror complete in 36 seconds : 70 links scanned, 64 files written (4040842 bytes overall) [789651 bytes received at 21934 bytes/sec], 3958245 bytes transferred using HTTP compression in 57 files, ratio 16%, 3.0 requests per connection
+(5 errors, 0 warnings, 0 messages)
