@@ -1,0 +1,1 @@
+# dr-ai-qazcode-nu-hackhaton
